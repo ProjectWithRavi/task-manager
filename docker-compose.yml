@@ -6,19 +6,31 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_URI=mongodb://mongo:27017/task-manager
       - PORT=3000
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - app-network
 
   mongo:
     image: mongo:6.0
+    command: mongod --wiredTigerCacheSizeGB=0.25
     ports:
       - "27017:27017"
     environment:
       - MONGO_INITDB_DATABASE=task-manager
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     volumes:
       - mongo-data:/data/db
     networks:
