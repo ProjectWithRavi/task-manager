@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/task-manager-app:${DOCKER_TAG}
     ports:
       - "3000:3000"
     environment:
@@ -12,9 +10,6 @@ services:
       - PORT=3000
     depends_on:
       - mongo
-    volumes:
-      - .:/app
-      - /app/node_modules
     networks:
       - app-network
 
