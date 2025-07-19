@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   app:
     build:
@@ -11,27 +10,35 @@ services:
       - MONGODB_URI=${MONGODB_URI}
       - PORT=3000
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/tasks"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     volumes:
       - .:/app
       - /app/node_modules
     networks:
       - app-network
-
   mongo:
     image: mongo:6.0
     ports:
       - "27017:27017"
     environment:
       - MONGO_INITDB_DATABASE=task-manager
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     volumes:
       - mongo-data:/data/db
     networks:
       - app-network
-
 volumes:
   mongo-data:
-
 networks:
   app-network:
     driver: bridge
